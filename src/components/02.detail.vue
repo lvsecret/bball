@@ -350,6 +350,14 @@ export default {
             goodId:this.artID,
             goodNum:this.buyCount
         })
+        //提示用户
+        this.$notify({
+            title:'加入成功',
+            message:'商品加入成功',
+            type:'success',
+            duration:1000
+
+        })
     }
   },
 

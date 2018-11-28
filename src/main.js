@@ -28,6 +28,7 @@ import './assets/site/css/style.css'
 import index from './components/index.vue'
 import detail from './components/02.detail.vue'
 import shopCart from './components/03.shopCart.vue';
+import order from './components/04.order.vue';
 // 写路由规则
 let routes=[
   {
@@ -46,11 +47,37 @@ let routes=[
   {
     path:'/shopCart',
     component:shopCart
+  },
+  {
+    path:'/order',
+    component:order
   }
 ]
 // 实例化路由对象
 let router=new VueRouter({
   routes
+});
+// 增加导航守卫 回调函数(每次路由改变的时候 触发)
+router.beforeEach((to, from, next) => {
+  console.log("守卫啦!!!!");
+  // console.log(to);
+  // console.log(from);
+  if (to.path == "/order") {
+    // 正要去订单页
+    // 必须先判断登录
+    axios.get("site/account/islogin").then(result => {
+        console.log(result);
+      if (result.data.code == "nologin") {
+        // 提示用户
+        Vue.prototype.$Message.warning("请先登录");
+        // 跳转页面(路由)
+        router.push("/index");
+      }
+    });
+  } else {
+    // next 如果不执行 就不会路由跳转
+    next();
+  }
 });
 //注册全局过滤器 方便使用
 //导入moment
@@ -69,10 +96,7 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
     // count: 0
-    cartData:JSON.parse(window.localStorage.getItem('hm24'))||{
-      90:8,
-      88:8
-    }
+    cartData:JSON.parse(window.localStorage.getItem('hm24'))||{}
   },
   getters:{
     totalCount(state){
@@ -90,6 +114,12 @@ const store = new Vuex.Store({
       }else{
         Vue.set(state.cartData,obj.goodId,obj.goodNum)
       }
+    },
+    updateCartData(state,obj){
+      state.cartData=obj;
+    },
+    delGoodsById(state,id){
+      this.delete(state.cartData,id)
     }
   }
 })
