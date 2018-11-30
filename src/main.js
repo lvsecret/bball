@@ -32,6 +32,9 @@ import detail from "./components/02.detail.vue";
 import shopCart from "./components/03.shopCart.vue";
 import order from "./components/04.order.vue";
 import login from "./components/05.login.vue";
+import payMoney from "./components/06.payMoney.vue";
+import paySuccess from "./components/07.paySuccess.vue";
+import vipCenter from "./components/08.vipCenter.vue";
 // 写路由规则
 let routes = [
   {
@@ -53,11 +56,27 @@ let routes = [
   },
   {
     path: "/order/:ids",
-    component: order
+    component: order,
+    meta: { checklogin: true }
   },
   {
     path: "/login",
     component: login
+  },
+  {
+    path: "/payMoney/:orderId",
+    component: payMoney,
+    meta: { checklogin: true }
+  },
+  {
+    path: "/paySuccess",
+    component: paySuccess,
+    meta: { checklogin: true }
+  },
+  {
+    path: "/vipCenter",
+    component: vipCenter,
+    meta: { checklogin: true }
   }
 ];
 // 实例化路由对象
@@ -69,7 +88,7 @@ router.beforeEach((to, from, next) => {
   console.log("守卫啦!!!!");
   // console.log(to);
   // console.log(from);
-  if (to.path.indexOf('/order')!=-1) {
+  if (to.meta.checklogin==true) {
     // 正要去订单页
     // 必须先判断登录
     axios.get("site/account/islogin").then(result => {
@@ -130,7 +149,7 @@ const store = new Vuex.Store({
       state.cartData = obj;
     },
     delGoodsById(state, id) {
-      this.delete(state.cartData, id);
+      Vue.delete(state.cartData, id);
     },
     changeLogin(state, isLogin) {
       state.isLogin = isLogin;
@@ -152,10 +171,10 @@ new Vue({
     axios.get("site/account/islogin").then(result => {
       // console.log(result);
       if (result.data.code == "nologin") {
-        // 提示用户
-        Vue.prototype.$Message.warning("请先登录");
-        // 跳转页面(路由)
-        router.push("/login");
+        // // 提示用户
+        // Vue.prototype.$Message.warning("请先登录");
+        // // 跳转页面(路由)
+        // router.push("/login");
       } else {
         //修改仓库中的状态
         store.state.isLogin=true;
