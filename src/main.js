@@ -35,6 +35,9 @@ import login from "./components/05.login.vue";
 import payMoney from "./components/06.payMoney.vue";
 import paySuccess from "./components/07.paySuccess.vue";
 import vipCenter from "./components/08.vipCenter.vue";
+import orderList from "./components/09.orderList.vue";
+import orderDetail from "./components/10.orderDetail.vue";
+import orderIndex from "./components/11.orderIndex.vue";
 // 写路由规则
 let routes = [
   {
@@ -76,19 +79,46 @@ let routes = [
   {
     path: "/vipCenter",
     component: vipCenter,
-    meta: { checklogin: true }
+    meta: { checklogin: true },
+    children: [
+      { path: "", 
+        redirect: "orderIndex" 
+      },
+      { path: "orderList", 
+        component: orderList,
+        meta:{
+        currentName:'订单列表' 
+        }
+      },
+      { path: "orderDetail/:orderId",
+        component: orderDetail,
+        meta:{
+        currentName:'订单详情' 
+        }
+      },
+      { path: "orderIndex", 
+        component: orderIndex,
+        meta:{
+        currentName:'中心首页' 
+        }
+      }
+    ]
   }
 ];
 // 实例化路由对象
 let router = new VueRouter({
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    return { x: 0, y: 0 };
+  },
+  mode: "history"
 });
 // 增加导航守卫 回调函数(每次路由改变的时候 触发)
 router.beforeEach((to, from, next) => {
   console.log("守卫啦!!!!");
   // console.log(to);
   // console.log(from);
-  if (to.meta.checklogin==true) {
+  if (to.meta.checklogin == true) {
     // 正要去订单页
     // 必须先判断登录
     axios.get("site/account/islogin").then(result => {
@@ -117,6 +147,10 @@ Vue.filter("shortTime", value => {
 Vue.filter("shortTimePlus", value => {
   return moment(value).format("YYYY/MM/DD HH:mm:ss");
 });
+Vue.filter("addSmlie", (value, smileType) => {
+  return value + smileType;
+});
+
 //vuex的使用
 import Vuex from "vuex";
 Vue.use(Vuex);
@@ -177,7 +211,7 @@ new Vue({
         // router.push("/login");
       } else {
         //修改仓库中的状态
-        store.state.isLogin=true;
+        store.state.isLogin = true;
         //如果登录成功啦
         // next();
       }

@@ -118,9 +118,9 @@
           <div class="cart-foot clearfix">
             <div class="right-box">
               <button class="button" onclick="javascript:location.href='/index.html';">继续购物</button>
-              <router-link :to="'/order/'+selectedIds">
-              <button class="submit" >立即结算</button>
-              </router-link>
+              <!-- <router-link :to="'/order/'+selectedIds"> -->
+              <button @click="toOrder" class="submit">立即结算</button>
+              <!-- </router-link> -->
             </div>
           </div>
           <!--购物车底部-->
@@ -132,14 +132,14 @@
 <script>
 export default {
   name: "shopCart",
-  data:function () {
-      return{
-          goodsList:[]
-      };
-    },
-    methods:{
-        delOne(id){
-            this.$confirm("此操作将删除该商品, 是否删除?", "温馨提示", {
+  data: function() {
+    return {
+      goodsList: []
+    };
+  },
+  methods: {
+    delOne(id) {
+      this.$confirm("此操作将删除该商品, 是否删除?", "温馨提示", {
         confirmButtonText: "狠心删除",
         cancelButtonText: "继续保留",
         type: "warning"
@@ -154,7 +154,7 @@ export default {
           });
           // 删除Vuex中的数据
           // 因为 watch 会监控数据的改变 修改 删除 都会触发 同步更新Vuex中的数据
-            // this.$store.commit('delGoodsById',id);
+          // this.$store.commit('delGoodsById',id);
           // 提示用户
           this.$message({
             type: "success",
@@ -167,71 +167,78 @@ export default {
             message: "已取消删除"
           });
         });
-        }
     },
-    //计算属性
-    computed:{
-        selectedCount(){
-            let num=0;
-            this.goodsList.forEach(v=>{
-                if(v.isSelected==true){
-                    num+=v.buycount;
-                }
-            });
-            return num;
-        },
-        selectedPrice(){
-            let price=0;
-            this.goodsList.forEach(v=>{
-                if(v.isSelected==true){
-                    price+=(v.buycount*v.sell_price)
-                }
-            });
-            return price;
-        },
-        selectedIds(){
-          let ids='';
-          this.goodsList.forEach(v=>{
-            if(v.isSelected==true){
-              ids+=v.id;
-              ids+=','
-            }
-          })
-          ids=ids.slice(0,ids.length-1);
-          return ids;
+    toOrder(){
+      if(this.selectedCount==0){
+        this.$Message.warning('没有东西快去买点');
+      }else{
+        this.$router.push('/order/'+this.selectedIds)
+      }
+    }
+  },
+  //计算属性
+  computed: {
+    selectedCount() {
+      let num = 0;
+      this.goodsList.forEach(v => {
+        if (v.isSelected == true) {
+          num += v.buycount;
         }
+      });
+      return num;
     },
-    //生命周期函数
-    created(){
-        let ids='';
-        for(const key in this.$store.state.cartData){
-            ids+=key;
-            ids+=',';
+    selectedPrice() {
+      let price = 0;
+      this.goodsList.forEach(v => {
+        if (v.isSelected == true) {
+          price += v.buycount * v.sell_price;
         }
-        console.log(ids);
-        ids=ids.slice(0,ids.length-1);
-        this.$axios.get(`site/comment/getshopcargoods/${ids}`).then(result=>{
-            console.log(result);
-            result.data.message.forEach(v => {
-                v.buycount=this.$store.state.cartData[v.id];
-                v.isSelected=true;
-            });
-            this.goodsList=result.data.message;
-        })
-    } ,
-    //使用watch观察数据的变化
-    watch:{
-        goodsList:{
-            handler:function(val,oldVal){
-                let obj={};
-                val.forEach(v=>{
-                    obj[v.id]=v.buycount;
-                });
-                this.$store.commit('updateCartData',obj);
-            },
-            deep:true
+      });
+      return price;
+    },
+    selectedIds() {
+      let ids = "";
+      this.goodsList.forEach(v => {
+        if (v.isSelected == true) {
+          ids += v.id;
+          ids += ",";
         }
-    }   
+      });
+      ids = ids.slice(0, ids.length - 1);
+      return ids;
+    }
+  },
+  //生命周期函数
+  created() {
+    let ids = "";
+    for (const key in this.$store.state.cartData) {
+      ids += key;
+      ids += ",";
+    }
+    console.log(ids);
+    ids = ids.slice(0, ids.length - 1);
+    this.$axios.get(`site/comment/getshopcargoods/${ids}`).then(result => {
+      console.log(result);
+      result.data.message.forEach(v => {
+        v.buycount = this.$store.state.cartData[v.id];
+        v.isSelected = true;
+      });
+      this.goodsList = result.data.message;
+    });
+  },
+  //使用watch观察数据的变化
+  watch: {
+    goodsList: {
+      handler: function(val, oldVal) {
+        let obj = {};
+        val.forEach(v => {
+          obj[v.id] = v.buycount;
+        });
+        this.$store.commit("updateCartData", obj);
+      },
+      deep: true
+    }
+  }
 };
 </script>
 <style>
